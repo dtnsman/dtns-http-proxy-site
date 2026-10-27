@@ -1,0 +1,333 @@
+/* ============================================================
+   sdk.html — client SDK guide
+   ============================================================ */
+
+.nav-links .nav-sdk { color: var(--blue); }
+.nav-links .nav-sdk.active { color: var(--blue); }
+
+.sdk-section { padding-top: 96px; }
+
+.sdk-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 13px 16px;
+  border: 1px solid rgba(108, 182, 255, 0.22);
+  border-radius: 12px;
+  background: rgba(108, 182, 255, 0.045);
+}
+.sdk-banner-tag {
+  flex: none;
+  margin-top: 1px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--blue);
+  color: #04101c;
+  font-family: var(--mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+.sdk-banner p {
+  margin: 0;
+  color: #b8cfdf;
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
+.sdk-grid {
+  display: grid;
+  grid-template-columns: 1.04fr 0.96fr;
+  gap: 18px;
+  align-items: start;
+}
+.sdk-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(14, 25, 39, 0.78), rgba(9, 16, 26, 0.78));
+}
+.sdk-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.sdk-card-head h3 { margin: 0; font-size: 1rem; }
+.sdk-card-head .tag { margin: 0; }
+.sdk-card .code { margin: 0; }
+.sdk-note {
+  margin: 0;
+  color: var(--dim);
+  font-size: 11.5px;
+  line-height: 1.75;
+}
+.sdk-note code { font-size: 10.5px; }
+
+.sdk-methods {
+  display: grid;
+  max-height: 440px;
+  overflow-y: auto;
+  border-top: 1px solid var(--line);
+  scrollbar-width: thin;
+}
+.sdk-method {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(126, 170, 210, 0.07);
+}
+.sdk-method code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #cfe3f5;
+  font-size: 10.5px;
+  overflow-wrap: anywhere;
+}
+.sdk-method span {
+  flex: none;
+  max-width: 52%;
+  color: var(--dim);
+  font-size: 10.5px;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.sdk-play {
+  margin-top: 18px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(13, 24, 38, 0.78), rgba(8, 15, 25, 0.78));
+}
+.sdk-play-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.sdk-play-head h3 { margin: 0; font-size: 1.05rem; }
+.sdk-status {
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 9.5px;
+  overflow-wrap: anywhere;
+}
+.sdk-status.is-online {
+  color: var(--mint);
+  border-color: rgba(66, 232, 180, 0.3);
+  background: rgba(66, 232, 180, 0.05);
+}
+.sdk-status.is-wait {
+  color: var(--amber);
+  border-color: rgba(255, 191, 105, 0.2);
+}
+.sdk-status.is-error {
+  color: var(--red);
+  border-color: rgba(255, 135, 145, 0.25);
+}
+.sdk-play-intro {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.8;
+}
+.sdk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+.sdk-result {
+  margin: 14px 0 0;
+  min-height: 120px;
+  max-height: 320px;
+  overflow: auto;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #060c14;
+  color: #a9bccf;
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.sdk-result.is-error {
+  border-color: rgba(255, 135, 145, 0.3);
+  color: #ffb3b9;
+}
+.sdk-call-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+.sdk-call-line code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #a9c9e8;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+.sdk-tips {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+.sdk-tip {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.012);
+}
+.sdk-tip h3 { margin: 0 0 6px; font-size: 12.5px; }
+.sdk-tip p { margin: 0; color: var(--dim); font-size: 11.5px; line-height: 1.7; }
+.sdk-tip code { font-size: 10.5px; }
+
+@media (max-width: 1000px) {
+  .sdk-grid { grid-template-columns: 1fr; }
+  .sdk-tips { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 680px) {
+  .sdk-section { padding-top: 82px; }
+  .sdk-card { padding: 20px; }
+  .sdk-play { padding: 18px; }
+  .sdk-method { flex-direction: column; gap: 3px; }
+  .sdk-method span { max-width: 100%; text-align: left; }
+  .sdk-call-line { flex-wrap: wrap; }
+  .sdk-result { min-height: 100px; }
+}
+
+/* ---------- proxy app / live demo additions ---------- */
+
+.sdk-group-title {
+  padding: 10px 0 4px;
+  color: var(--mint);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.sdk-group-title:first-child { padding-top: 0; }
+
+.sdk-demo-base {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #060c14;
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 9.5px;
+}
+.sdk-demo-base > span {
+  flex: none;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.sdk-demo-base code {
+  flex: 1;
+  min-width: 140px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #a9c9e8;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+
+.sdk-demo-log-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+}
+
+.sdk-demo-log {
+  max-height: 180px;
+  margin-top: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.agent-method.err {
+  color: var(--red);
+  border-color: rgba(255, 135, 145, 0.25);
+}
+
+.sdk-actions .agent-mini { font-size: 9px; }
+
+@media (max-width: 680px) {
+  .sdk-demo-base { align-items: flex-start; }
+  .sdk-demo-base code { flex-basis: 100%; }
+  .sdk-demo-log { max-height: 150px; }
+}
+
+/* ---------- WebSocket live panel ---------- */
+
+.sdk-ws-play { margin-top: 18px; }
+
+.sdk-ws-send {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.sdk-ws-send input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #060c14;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  outline: none;
+}
+.sdk-ws-send input:focus {
+  border-color: var(--mint);
+  box-shadow: 0 0 0 3px rgba(110, 231, 183, 0.08);
+}
+.sdk-ws-send input:disabled { opacity: 0.45; }
+
+.sdk-ws-log {
+  min-height: 92px;
+  max-height: 190px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 680px) {
+  .sdk-ws-send { flex-direction: column; }
+}

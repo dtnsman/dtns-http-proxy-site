@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DTNS HTTP Proxy · 一个域名，直达内网服务</title>
+<meta name="description" content="dtns.http-proxy 是一套基于 WebSocket 的轻量内网穿透系统：按域名精确路由，HTTP、WebSocket、SSE 原样透传，二进制隧道协议与双向背压。">
+<meta name="theme-color" content="#05080d">
+<meta name="color-scheme" content="dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="DTNS HTTP Proxy · 一个域名，直达内网服务">
+<meta property="og:description" content="基于 WebSocket 的内网穿透系统：按域名路由，HTTP / WebSocket / SSE 原样透传，二进制协议 + 双向背压。">
+<meta property="og:url" content="http://dtns-proxy.html.dtns.top/">
+<link rel="canonical" href="http://dtns-proxy.html.dtns.top/">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<script src="/assets/early.js"></script>
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body id="top">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<div class="bg" aria-hidden="true">
+  <div class="bg-grid"></div>
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+</div>
+
+<header class="nav" id="nav">
+  <div class="nav-inner wrap">
+    <a class="brand" href="#top" aria-label="DTNS HTTP Proxy 首页">
+      <svg class="brand-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M16 3.5 27 9.7v12.6L16 28.5 5 22.3V9.7L16 3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M11 16h9.2m-3.6-3.6L20.2 16l-3.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand-text">DTNS<span class="brand-sub">/proxy</span></span>
+    </a>
+    <nav class="nav-links" id="navLinks" aria-label="主导航">
+      <a href="#overview">概览</a>
+      <a href="#architecture">架构</a>
+      <a href="#features">能力</a>
+      <a href="#protocol">协议</a>
+      <a href="#start">上手</a>
+      <a href="#config">配置</a>
+      <a href="#tunnels">隧道</a>
+      <a class="nav-cta" href="#start">快速开始</a>
+    </nav>
+    <button class="nav-toggle" id="navToggle" type="button" aria-label="打开菜单" aria-expanded="false" aria-controls="navLinks">
+      <span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero wrap" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <p class="badge"><span class="dot"></span>内网穿透 · WebSocket 隧道 · 协议 v2</p>
+      <h1 id="hero-title">一个域名，<br><span class="grad">直达内网服务。</span></h1>
+      <p class="lede">dtns.http-proxy 是一套基于 WebSocket 的轻量内网穿透系统。公网侧按 Host 精确路由，内网侧只需要一份 <code>config.js</code>；HTTP、WebSocket、SSE 原样透传，不改变你的应用。</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="#start">快速开始
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-5-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="#architecture">查看架构</a>
+      </div>
+      <ul class="hero-meta">
+        <li><span>Node.js</span>运行时</li>
+        <li><span>18385 / 18386</span>服务端口</li>
+        <li><span>*.html.dtns.top</span>域名入口</li>
+      </ul>
+    </div>
+
+    <div class="hero-visual">
+      <div class="term">
+        <div class="term-bar">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="term-title">tunnel://live</span>
+          <span class="term-pill">WSS</span>
+        </div>
+        <div class="term-body" id="termBody" role="img" aria-label="隧道请求示例：浏览器请求经接入层、隧道服务端与内网客户端到达本地服务，返回 200 OK"></div>
+        <div class="term-foot">
+          <span class="live"><i></i>已连接</span>
+          <span>心跳 30s</span>
+          <span>协议 v2</span>
+        </div>
+      </div>
+      <span class="float-chip chip-a">HOST 路由</span>
+      <span class="float-chip chip-b">200 OK · 18 ms</span>
+    </div>
+  </section>
+
+  <section class="wrap stats-wrap" aria-label="项目数据">
+    <dl class="stats">
+      <div class="stat">
+        <dt>已配置隧道</dt>
+        <dd><span class="stat-num" id="tunnelCount">6</span><span class="stat-unit">条</span></dd>
+      </div>
+      <div class="stat">
+        <dt>透传流量类型</dt>
+        <dd><span class="stat-num">3</span><span class="stat-unit">类</span></dd>
+      </div>
+      <div class="stat">
+        <dt>固定帧头</dt>
+        <dd><span class="stat-num">13</span><span class="stat-unit">B</span></dd>
+      </div>
+      <div class="stat">
+        <dt>流式分块</dt>
+        <dd><span class="stat-num">256</span><span class="stat-unit">KB</span></dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="section wrap" id="overview">
+    <div class="section-head reveal">
+      <p class="eyebrow">01 — 概览</p>
+      <h2>把「本地能跑」<br>变成「公网可用」。</h2>
+      <p>大多数内网服务并不缺功能，缺的是一个稳定、可寻址的公网入口。dtns.http-proxy 用一条常驻 WebSocket 把内网节点连到公网边缘：请求按域名分发，响应沿原路返回——不需要公网 IP，也不需要动路由器。</p>
+    </div>
+    <div class="grid-3">
+      <article class="card num-card reveal">
+        <span class="card-index" aria-hidden="true">01</span>
+        <h3>没有公网 IP？</h3>
+        <p>客户端主动向外建立 WSS 长连接。NAT、防火墙、动态 IP 之后的内网机器，也能被稳定访问。</p>
+        <span class="tag">出站连接即可</span>
+      </article>
+      <article class="card num-card reveal">
+        <span class="card-index" aria-hidden="true">02</span>
+        <h3>多个本地服务？</h3>
+        <p>一个客户端可以注册多条隧道。Host 命中哪个域名，请求就进入哪个本地端口，互不打扰。</p>
+        <span class="tag">一条连接 · 多条隧道</span>
+      </article>
+      <article class="card num-card reveal">
+        <span class="card-index" aria-hidden="true">03</span>
+        <h3>实时协议受限？</h3>
+        <p>WebSocket 升级、SSE 事件流、长连接下载都在隧道内原样传递，不会被缓冲成一次性响应。</p>
+        <span class="tag">HTTP · WS · SSE</span>
+      </article>
+    </div>
+  </section>
+
+  <section class="section wrap" id="architecture">
+    <div class="section-head reveal">
+      <p class="eyebrow">02 — 架构</p>
+      <h2>一次请求，穿过整条链路。</h2>
+      <p>公网入口通常只做两件事：终止 TLS，把请求交给隧道代理。真正的路由发生在服务端按 Host 查表，转发发生在内网客户端按配置查表。</p>
+    </div>
+
+    <div class="arch-panel reveal">
+      <div class="arch-flow">
+        <div class="arch-node">
+          <span class="node-zone">公网</span>
+          <svg class="node-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5S14.4 18.2 12 20.5C9.6 18.2 8.4 15.4 8.4 12S9.6 5.8 12 3.5Z" stroke="currentColor" stroke-width="1.3"/></svg>
+          <h3>浏览器</h3>
+          <p>HTTPS 请求</p>
+        </div>
+        <div class="arch-link"><span class="line"></span><span class="label">HTTPS</span></div>
+        <div class="arch-node">
+          <span class="node-zone">边缘</span>
+          <svg class="node-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.2 20 6v6.2c0 4.6-3.3 7.6-8 8.6-4.7-1-8-4-8-8.6V6l8-2.8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m8.8 12 2.2 2.2 4.2-4.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h3>接入层</h3>
+          <p>nginx · TLS 终止</p>
+        </div>
+        <div class="arch-link"><span class="line"></span><span class="label" title="按 Host 精确匹配已注册隧道">Host 路由</span></div>
+        <div class="arch-node node-server">
+          <span class="node-zone">公网</span>
+          <svg class="node-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="6" rx="1.6" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="14" width="18" height="6" rx="1.6" stroke="currentColor" stroke-width="1.6"/><path d="M7 7h.01M7 17h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          <h3>隧道服务端</h3>
+          <p>:18386 HTTP · :18385 WSS</p>
+        </div>
+        <div class="arch-link bridge"><span class="line"></span><span class="label" title="常驻 WebSocket，承载 DTNS 二进制帧">WSS 隧道</span></div>
+        <div class="arch-node node-client">
+          <span class="node-zone">内网</span>
+          <svg class="node-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 20h8M12 16.5V20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="m8.5 9 2 2-2 2M13 13h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h3>隧道客户端</h3>
+          <p>主动外连 · 常驻内网</p>
+        </div>
+        <div class="arch-link"><span class="line"></span><span class="label" title="转发到 config.js 中配置的本地端口">本地端口</span></div>
+        <div class="arch-node">
+          <span class="node-zone">内网</span>
+          <svg class="node-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9" stroke="currentColor" stroke-width="1.3"/></svg>
+          <h3>本地服务</h3>
+          <p>任意 HTTP 应用</p>
+        </div>
+      </div>
+      <div class="arch-note">
+        <span class="pulse-dot" aria-hidden="true"></span>
+        没有隧道命中时，代理直接返回 <code>404 No tunnel registered for domain: &lt;host&gt;</code>，而不是把请求泄露到别处。
+      </div>
+    </div>
+
+    <ol class="steps">
+      <li class="step reveal"><span class="step-num">01</span><div><h3>接入</h3><p>接入层终止 TLS，把 HTTP 请求交给 :18386 代理。</p></div></li>
+      <li class="step reveal"><span class="step-num">02</span><div><h3>查表</h3><p>代理读取 Host，在已注册隧道中定位 clientId 与目标隧道。</p></div></li>
+      <li class="step reveal"><span class="step-num">03</span><div><h3>编码</h3><p>请求被编码为 DTNS 二进制帧，经 WSS 长连接送达内网。</p></div></li>
+      <li class="step reveal"><span class="step-num">04</span><div><h3>转发</h3><p>客户端按 config.js 转发到本地端口，响应沿原路返回。</p></div></li>
+      <li class="step reveal"><span class="step-num">05</span><div><h3>透传</h3><p>WebSocket 升级、双向帧与 SSE 事件流都走同一条通道。</p></div></li>
+    </ol>
+  </section>
+
+  <section class="section wrap" id="features">
+    <div class="section-head reveal">
+      <p class="eyebrow">03 — 能力</p>
+      <h2>不只转发页面，<br>也转发「连接」。</h2>
+      <p>很多穿透工具能打开一个网页，却在 WebSocket 或事件流上退化成轮询。dtns.http-proxy 把这些通道当作一等公民。</p>
+    </div>
+    <div class="grid-3 features">
+      <article class="card feature reveal">
+        <div class="feature-top">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="5.5" cy="6" r="2" stroke="currentColor" stroke-width="1.6"/><circle cx="18.5" cy="6" r="2" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="18" r="2" stroke="currentColor" stroke-width="1.6"/><path d="M7.5 6h9M6.3 7.8l4.4 8.2M17.7 7.8l-4.4 8.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <span class="tag">ROUTING</span>
+        </div>
+        <h3>Host 即路由</h3>
+        <p>每条隧道绑定一个域名。请求按 Host 精确匹配，多服务共用一个客户端也不会串线。</p>
+      </article>
+      <article class="card feature reveal">
+        <div class="feature-top">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 7H5.5A2.5 2.5 0 0 0 3 9.5v5A2.5 2.5 0 0 0 5.5 17H8M16 7h2.5A2.5 2.5 0 0 1 21 9.5v5a2.5 2.5 0 0 1-2.5 2.5H16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M7 12h10m-3-3 3 3-3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="tag">WEBSOCKET</span>
+        </div>
+        <h3>WebSocket 全双工</h3>
+        <p>升级握手同样走隧道；101 之后 text / binary 帧双向透传，帧类型用标志位无损保留。</p>
+      </article>
+      <article class="card feature reveal">
+        <div class="feature-top">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12a8 8 0 0 1 8-8M20 12a8 8 0 0 1-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M12 4v2.2M12 17.8V20M4 12h2.2M17.8 12H20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span class="tag">STREAM</span>
+        </div>
+        <h3>SSE 与流式响应</h3>
+        <p><code>text/event-stream</code> 增量透传。大响应按块下发，通过信用窗口控制节奏，不必整包缓冲。</p>
+      </article>
+      <article class="card feature reveal">
+        <div class="feature-top">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13.5 6l-3 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="tag">PROTOCOL</span>
+        </div>
+        <h3>DTNS 二进制协议</h3>
+        <p>4 字节魔数 + 固定头 + 纯二进制负载，没有 Base64 膨胀；v2 用双字节状态码修复 4xx/5xx。</p>
+      </article>
+      <article class="card feature reveal">
+        <div class="feature-top">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 14a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="m12 14 3.5-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="14" r="1.6" fill="currentColor"/><path d="M4 14v2.5M20 14v2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span class="tag">BACKPRESSURE</span>
+        </div>
+        <h3>双向背压</h3>
+        <p>浏览器侧与隧道侧各自设置高低水位（256 KB / 64 KB），慢消费者不会把内存吃满。</p>
+      </article>
+      <article class="card feature reveal">
+        <div class="feature-top">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M20 5v6h-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="tag">RESILIENCE</span>
+        </div>
+        <h3>自愈连接</h3>
+        <p>30 秒心跳、线性退避重连、健康校验失败后自动重连并全量重新注册隧道。</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section wrap" id="protocol">
+    <div class="section-head reveal">
+      <p class="eyebrow">04 — 协议</p>
+      <h2>为「原样转发」<br>设计的帧格式。</h2>
+      <p>DTNS 协议不追求通用，只解决一件事：让 HTTP 与 WebSocket 在一条长连接里高效、无损地通过。</p>
+    </div>
+
+    <div class="proto-grid">
+      <div class="proto-card reveal">
+        <div class="frame" role="img" aria-label="DTNS 帧结构：4 字节魔数、1 字节版本、2 字节类型、2 字节标志、4 字节长度、N 字节负载">
+          <div class="fseg f-magic"><span>DTNS</span><small>4 B</small></div>
+          <div class="fseg f-ver"><span>VER</span><small>1 B</small></div>
+          <div class="fseg f-type"><span>TYPE</span><small>2 B</small></div>
+          <div class="fseg f-flags"><span>FLAGS</span><small>2 B</small></div>
+          <div class="fseg f-len"><span>LEN</span><small>4 B</small></div>
+          <div class="fseg f-payload"><span>PAYLOAD</span><small>N B</small></div>
+        </div>
+        <p class="frame-note">固定头 13 字节；LEN 只描述负载长度。请求体与响应体直接以 Buffer 传输，不做文本化。</p>
+        <div class="chips" aria-label="常见帧类型">
+          <span class="chip">register_tunnel <b>0x0001</b></span>
+          <span class="chip">http_request <b>0x0105</b></span>
+          <span class="chip">http_response <b>0x0004</b></span>
+          <span class="chip">websocket_data <b>0x000D</b></span>
+          <span class="chip">stream_chunk <b>0x0021</b></span>
+          <span class="chip">heartbeat <b>0x0003</b></span>
+          <span class="chip chip-more">共 30+ 种</span>
+        </div>
+      </div>
+
+      <div class="proto-copy reveal">
+        <h3>几个关键约束</h3>
+        <ul class="ticks">
+          <li><b>零 Base64。</b>响应体、请求体、WebSocket 帧都是原始字节，避免 33% 的编码开销。</li>
+          <li><b>多值头无损。</b>头部按数组编码，多个 <code>Set-Cookie</code> 不会被逗号拼坏。</li>
+          <li><b>帧类型显式。</b><code>IS_BINARY</code> 标志区分 WebSocket 的 text 与 binary 帧，不再靠 UTF-8 猜测。</li>
+          <li><b>向后兼容。</b>客户端读取服务端欢迎帧里的协议版本；旧服务端自动降级到 v1 或 JSON 分支。</li>
+        </ul>
+
+        <div class="callout">
+          <div class="callout-head">
+            <span class="callout-badge">FIX</span>
+            v1 → v2：状态码不再被截断
+          </div>
+          <p>v1 的状态码只占 1 字节，<code>401</code> 会被截成 <code>145</code>，所有 4xx/5xx 接口在浏览器里都会变成非法状态。v2 改成 2 字节大端；遇到旧服务端时，客户端只把超范围响应切到 JSON 帧发送。</p>
+          <div class="mini-code">
+            <div><span class="mc">// protocol v1</span><span>status = 401 &amp; 0xff</span><span class="bad">→ 145</span></div>
+            <div><span class="mc">// protocol v2</span><span>writeUInt16BE(401)</span><span class="good">→ 401</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap" id="start">
+    <div class="section-head reveal">
+      <p class="eyebrow">05 — 上手</p>
+      <h2>两台机器，三步跑通。</h2>
+      <p>公网侧启动服务端，内网侧写一份 config.js 并启动客户端；域名解析与入口 TLS 交给 nginx。</p>
+    </div>
+
+    <div class="tabs reveal" role="tablist" aria-label="快速开始步骤">
+      <button class="tab active" id="tabbtn-server" type="button" role="tab" aria-selected="true" aria-controls="tab-server">
+        <span class="tab-num">1</span> 服务端
+      </button>
+      <button class="tab" id="tabbtn-client" type="button" role="tab" aria-selected="false" aria-controls="tab-client" tabindex="-1">
+        <span class="tab-num">2</span> 客户端
+      </button>
+      <button class="tab" id="tabbtn-verify" type="button" role="tab" aria-selected="false" aria-controls="tab-verify" tabindex="-1">
+        <span class="tab-num">3</span> 验证
+      </button>
+    </div>
+
+    <div class="tab-panel reveal" id="tab-server" role="tabpanel" aria-labelledby="tabbtn-server">
+      <div class="start-grid">
+        <div class="code">
+          <div class="code-bar"><span>公网服务器 · shell</span><button class="copy" type="button" data-copy="cmd-server" aria-label="复制服务端命令">复制</button></div>
+          <pre id="cmd-server"><code>cd server
+npm install
+node index.js</code></pre>
+        </div>
+        <div class="start-side">
+          <h3>需要准备什么</h3>
+          <p>一台有公网入口的服务器、一个指向它的域名，以及 nginx（或同类入口）把 80/443 转发到隧道服务端。</p>
+          <ul class="ticks small">
+            <li>HTTP 代理监听 <code>:18386</code></li>
+            <li>WebSocket 监听 <code>:18385</code>，路径 <code>/tunnel</code></li>
+            <li>入口层负责 TLS 与域名解析</li>
+          </ul>
+        </div>
+      </div>
+      <div class="code wide">
+        <div class="code-bar"><span>server/config.js · 关键项</span><button class="copy" type="button" data-copy="code-server" aria-label="复制服务端配置">复制</button></div>
+        <pre id="code-server"><code>module.exports = {
+  http:      { port: 18386, host: '0.0.0.0', domainBase: '.html.dtns.top' },
+  websocket: { port: 18385, path: '/tunnel' },
+  protocol:  { preferred: 'binary', binaryEnabled: true, version: 1 },
+  clients:   { heartbeatTimeout: 60000, maxConnections: 1000 },
+  streaming: { enabled: false, chunkSize: 262144, windowSize: 1048576 },
+  limits:    { maxBodySize: 32 * 1024 * 1024 }
+};</code></pre>
+      </div>
+    </div>
+
+    <div class="tab-panel reveal" id="tab-client" role="tabpanel" aria-labelledby="tabbtn-client" hidden>
+      <div class="start-grid">
+        <div class="code">
+          <div class="code-bar"><span>内网机器 · shell</span><button class="copy" type="button" data-copy="cmd-client" aria-label="复制客户端命令">复制</button></div>
+          <pre id="cmd-client"><code>cd client
+npm install
+node index.js</code></pre>
+        </div>
+        <div class="start-side">
+          <h3>客户端做什么</h3>
+          <p>读取 <code>config.js</code>，用唯一的 <code>client.id</code> 连接服务端，并把每条启用的隧道注册上去。</p>
+          <ul class="ticks small">
+            <li>主动外连，不需要入站端口</li>
+            <li>心跳 30 秒，断线自动重连</li>
+            <li>域名与本地端口的映射完全在本地配置</li>
+          </ul>
+        </div>
+      </div>
+      <div class="code wide">
+        <div class="code-bar"><span>client/config.js · 最小示例</span><button class="copy" type="button" data-copy="code-client" aria-label="复制客户端配置">复制</button></div>
+        <pre id="code-client"><code>module.exports = {
+  server: { wsServerUrl: 'wss://res2.dtns.top', wsPath: '/tunnel' },
+  client: {
+    id: process.env.CLIENT_ID || 'my-node-1',
+    heartbeat: { interval: 30000 },
+    reconnect: { enabled: true, interval: 5000, maxAttempts: 100000000 }
+  },
+  protocol: { preferred: 'binary', binaryEnabled: true, version: 1 },
+  tunnels: [{
+    id: 'web',
+    domain: 'app.html.dtns.top',
+    local: { host: '127.0.0.1', port: 3000, protocol: 'http' },
+    enabled: true,
+    description: '主 Web 应用'
+  }]
+};</code></pre>
+      </div>
+    </div>
+
+    <div class="tab-panel reveal" id="tab-verify" role="tabpanel" aria-labelledby="tabbtn-verify" hidden>
+      <div class="start-grid">
+        <div class="code">
+          <div class="code-bar"><span>任意机器 · shell</span><button class="copy" type="button" data-copy="cmd-verify" aria-label="复制验证命令">复制</button></div>
+          <pre id="cmd-verify"><code>curl -I http://app.html.dtns.top/
+# HTTP/2 200
+# server: nginx
+# content-type: text/html</code></pre>
+        </div>
+        <div class="start-side">
+          <h3>看到 200 就通了</h3>
+          <p>如果返回 <code>404 No tunnel registered for domain</code>，说明域名没有注册到任何客户端；检查 <code>client.id</code>、<code>tunnels[].domain</code> 与客户端日志。</p>
+          <ul class="ticks small">
+            <li>WebSocket 回显测试：<code>test/demo.js</code></li>
+            <li>客户端日志会打印每条隧道的注册结果</li>
+            <li>服务端仅监听 18385 / 18386，公网入口由 nginx 暴露</li>
+          </ul>
+        </div>
+      </div>
+      <div class="code wide">
+        <div class="code-bar"><span>test/demo.js · WebSocket 回显服务</span><button class="copy" type="button" data-copy="cmd-demo" aria-label="复制 Demo 命令">复制</button></div>
+        <pre id="cmd-demo"><code>cd test
+npm install
+node demo.js
+# ws://127.0.0.1:30100/  → 为它配置一条隧道即可验证全双工</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap" id="config">
+    <div class="section-head reveal">
+      <p class="eyebrow">06 — 配置</p>
+      <h2>两个 config.js，<br>覆盖全部行为。</h2>
+      <p>客户端决定「暴露什么」，服务端决定「如何转发」。修改配置后重启对应进程即可生效。</p>
+    </div>
+
+    <div class="config-block reveal">
+      <div class="config-head">
+        <h3>客户端 <code>client/config.js</code></h3>
+        <span class="tag">内网侧</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>配置项</th><th>示例 / 默认</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><code>server.wsServerUrl</code></td><td><code>wss://res2.dtns.top</code></td><td>服务端 WebSocket 地址</td></tr>
+            <tr><td><code>server.wsPath</code></td><td><code>/tunnel</code></td><td>握手路径，需与服务端一致</td></tr>
+            <tr><td><code>client.id</code></td><td><code>process.env.CLIENT_ID</code></td><td>客户端唯一标识，支持环境变量覆盖</td></tr>
+            <tr><td><code>client.heartbeat.interval</code></td><td><code>30000</code></td><td>心跳间隔（毫秒）</td></tr>
+            <tr><td><code>client.reconnect.interval</code></td><td><code>5000</code></td><td>重连基数，线性退避，上限 60 秒</td></tr>
+            <tr><td><code>client.performance.maxConcurrentRequests</code></td><td><code>100</code></td><td>并发请求上限</td></tr>
+            <tr><td><code>client.performance.requestTimeout</code></td><td><code>30000</code></td><td>请求超时（毫秒）</td></tr>
+            <tr><td><code>client.performance.maxPayloadSize</code></td><td><code>100 * 1024 * 1024</code></td><td>WebSocket 单帧上限（100 MB）</td></tr>
+            <tr><td><code>protocol.preferred</code></td><td><code>binary</code></td><td><code>binary</code> / <code>json</code> / <code>auto</code></td></tr>
+            <tr><td><code>tunnels[].domain</code></td><td><code>app.html.dtns.top</code></td><td>公网域名，Host 精确匹配</td></tr>
+            <tr><td><code>tunnels[].local</code></td><td><code>{ host, port, protocol }</code></td><td>本地目标服务</td></tr>
+            <tr><td><code>tunnels[].rewriteHost</code></td><td><code>false</code></td><td>是否把 Host 改写为上游地址</td></tr>
+            <tr><td><code>tunnels[].rewriteOrigin</code></td><td><code>false</code></td><td>是否把 Origin 改写为上游地址</td></tr>
+            <tr><td><code>tunnels[].rewriteLocation</code></td><td><code>false</code></td><td>把指向上游的绝对 Location 改写回公网地址</td></tr>
+            <tr><td><code>tunnels[].rewriteCookieDomain</code></td><td><code>false</code></td><td>把 Set-Cookie 的 Domain 改写为公网域名</td></tr>
+            <tr><td><code>tunnels[].auth</code></td><td><code>{ enabled, username, password }</code></td><td>访问上游时附加 Basic Auth</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="config-block reveal">
+      <div class="config-head">
+        <h3>服务端 <code>server/config.js</code></h3>
+        <span class="tag">公网侧</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>配置项</th><th>示例 / 默认</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><code>http.port / http.host</code></td><td><code>18386 / 0.0.0.0</code></td><td>HTTP 代理监听地址</td></tr>
+            <tr><td><code>http.domainBase</code></td><td><code>.html.dtns.top</code></td><td>文档中的域名基础部分</td></tr>
+            <tr><td><code>websocket.port / path</code></td><td><code>18385 / /tunnel</code></td><td>隧道长连接入口</td></tr>
+            <tr><td><code>clients.heartbeatTimeout</code></td><td><code>60000</code></td><td>心跳超时（毫秒）</td></tr>
+            <tr><td><code>clients.maxConnections</code></td><td><code>1000</code></td><td>客户端连接上限</td></tr>
+            <tr><td><code>streaming.enabled</code></td><td><code>false</code></td><td>流式通道总开关</td></tr>
+            <tr><td><code>streaming.chunkSize</code></td><td><code>262144</code></td><td>单块 256 KB</td></tr>
+            <tr><td><code>streaming.windowSize</code></td><td><code>1048576</code></td><td>每流信用窗口 1 MB</td></tr>
+            <tr><td><code>streaming.idleTimeoutMs</code></td><td><code>60000</code></td><td>空闲超时（非总时长）</td></tr>
+            <tr><td><code>limits.maxBodySize</code></td><td><code>33554432</code></td><td>请求体上限 32 MB，超出返回 413</td></tr>
+            <tr><td><code>limits.maxBodySizeByDomain</code></td><td><code>{}</code></td><td>按域名覆盖请求体上限</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="inline-tip">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.5 21 19H3L12 3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 9.5v4M12 16.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <p>改配置前先备份：<code>cp config.js config.js.bak-$(date +%Y%m%d-%H%M%S)</code>。重启客户端后，新隧道才会注册。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap" id="tunnels">
+    <div class="section-head reveal">
+      <p class="eyebrow">07 — 发布</p>
+      <h2>本站，就是一条隧道。</h2>
+      <p>这个页面没有独立的托管平台：它由项目自己的客户端注册，由项目自己的服务端按 Host 路由。下面只展示本站的发布链路和多隧道配置示意。</p>
+    </div>
+
+    <div class="publish-grid">
+      <div class="publish-card reveal">
+        <div class="publish-head">
+          <span class="live"><i></i>当前页面</span>
+          <span class="tag">SELF-HOSTED</span>
+        </div>
+        <dl class="publish-map">
+          <div><dt>公网域名</dt><dd><code>dtns-proxy.html.dtns.top</code></dd></div>
+          <div><dt>隧道客户端</dt><dd>内网常驻 · WSS 出站</dd></div>
+          <div><dt>本地目标</dt><dd><code>127.0.0.1:3016</code></dd></div>
+          <div><dt>服务端</dt><dd><code>:18386</code> HTTP · <code>:18385</code> WSS</dd></div>
+        </dl>
+        <p class="publish-note">页面是静态的，服务是零依赖的；隧道只负责把请求送进来。</p>
+        <p class="publish-warn">当前实例的公网入口只配置了 HTTP。生产环境应在 nginx 侧为隧道域名配置证书，并强制跳转 HTTPS。</p>
+      </div>
+
+      <div class="publish-side reveal">
+        <div class="tunnel-head">
+          <span class="live"><i></i>配置已加载</span>
+          <span class="tunnel-meta" id="tunnelUpdated">等待刷新…</span>
+        </div>
+        <div class="publish-body">
+          <div class="tunnel-count"><span id="tunnelCountBig">6</span><small>条已配置隧道</small></div>
+          <p>同一个客户端可以同时暴露多个本地服务。请求按 Host 精确匹配，互不串线。</p>
+          <div class="mini-table" aria-label="多隧道路由示意">
+            <div class="mini-row"><code>app.html.dtns.top</code><span>127.0.0.1:3000</span></div>
+            <div class="mini-row"><code>ws.html.dtns.top</code><span>127.0.0.1:10310</span></div>
+            <div class="mini-row"><code>console.html.dtns.top</code><span>127.0.0.1:7681</span></div>
+          </div>
+          <p class="mini-label">多隧道路由示意（非本实例真实配置）</p>
+          <p class="publish-privacy">出于安全考虑，本站不公开其他服务的域名与端口。<code>GET /api/tunnels</code> 只返回隧道数量。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap" id="structure">
+    <div class="section-head reveal">
+      <p class="eyebrow">08 — 结构</p>
+      <h2>代码不多，边界清楚。</h2>
+      <p>客户端只负责「连上去、查表、转发」，服务端只负责「接住、查表、送回去」。协议层被单独抽出来，两端共用同一套编解码逻辑。</p>
+    </div>
+
+    <div class="split-2">
+      <div class="code reveal">
+        <div class="code-bar"><span>dtns.http-proxy/</span></div>
+        <pre><code>dtns.http-proxy/
+├── client/                 <span class="c"># 内网侧</span>
+│   ├── index.js            <span class="c"># 连接 / 注册 / 心跳 / 重连</span>
+│   ├── tunnel-manager.js   <span class="c"># 隧道表与请求分发</span>
+│   ├── http-proxy.js       <span class="c"># 本地转发 / WS / SSE / 流式</span>
+│   ├── protocol.js         <span class="c"># DTNS 二进制编解码</span>
+│   ├── config.js           <span class="c"># 客户端配置</span>
+│   └── daemon.js           <span class="c"># 可选的健康守护</span>
+├── server/                 <span class="c"># 公网侧</span>
+│   ├── index.js            <span class="c"># 启动入口</span>
+│   ├── websocket-server.js <span class="c"># 连接与隧道注册</span>
+│   ├── proxy-server.js     <span class="c"># 域名路由 / 升级 / 背压</span>
+│   ├── protocol.js         <span class="c"># 与服务端一致的协议实现</span>
+│   └── config.js           <span class="c"># 服务端配置</span>
+├── test/                   <span class="c"># WebSocket 回显测试</span>
+└── website/                <span class="c"># 本站（静态页面 + 零依赖服务）</span></code></pre>
+      </div>
+
+      <div class="ops">
+        <article class="card ops-card reveal">
+          <h3>进程守护</h3>
+          <p>现有部署用 <code>forever</code> 托管客户端；也可以交给 systemd、supervisor 或容器编排。</p>
+        </article>
+        <article class="card ops-card reveal">
+          <h3>日志</h3>
+          <p>客户端会打印隧道注册、转发失败与心跳统计；服务端按请求 ID 记录路由与状态码。</p>
+        </article>
+        <article class="card ops-card reveal">
+          <h3>安全边界</h3>
+          <p>只暴露需要暴露的服务，本地服务尽量绑定 <code>127.0.0.1</code>；入口层负责 TLS 与访问控制，请求体上限兜底大包。</p>
+        </article>
+      </div>
+    </div>
+
+    <div class="self-note reveal">
+      <span class="self-badge">本站即实例</span>
+      <p>你现在看到的页面，正是通过本项目发布的：<code>dtns-proxy.html.dtns.top</code> → 内网 <code>127.0.0.1:3016</code>，配置写在 <code>client/config.js</code> 里。</p>
+    </div>
+  </section>
+
+  <section class="section wrap" id="faq">
+    <div class="section-head reveal">
+      <p class="eyebrow">09 — 问答</p>
+      <h2>常见问题。</h2>
+    </div>
+    <div class="faq reveal">
+      <details>
+        <summary>域名返回 <code>404 No tunnel registered for domain</code>？</summary>
+        <p>说明请求已经到了隧道服务端，但 Host 没有匹配到任何已注册隧道。检查 <code>client/config.js</code> 里的域名拼写、客户端是否在线，以及客户端日志中的「隧道注册成功」。</p>
+      </details>
+      <details>
+        <summary>为什么有的 4xx / 5xx 状态码显示不正常？</summary>
+        <p>这是 v1 协议的单字节状态码限制：<code>401 &amp; 0xff = 145</code>。使用 v2 协议即可无损传输；客户端连接旧服务端时会自动把超范围响应切到 JSON 帧。</p>
+      </details>
+      <details>
+        <summary>WebSocket 连接建立后马上断开？</summary>
+        <p>先确认本地服务本身能完成升级，再检查路径、子协议与 Origin。若本地框架校验 Host / Origin，可以在对应隧道上开启 <code>rewriteHost</code> / <code>rewriteOrigin</code>。</p>
+      </details>
+      <details>
+        <summary>上传大文件被 413 拒绝？</summary>
+        <p>服务端默认请求体上限是 32 MB。可以在 <code>limits.maxBodySize</code> 调整全局值，或用 <code>maxBodySizeByDomain</code> 为特定域名放宽。</p>
+      </details>
+      <details>
+        <summary>客户端断线后需要手动重连吗？</summary>
+        <p>不需要。客户端内置心跳与线性退避重连（上限 60 秒）；健康校验发现隧道未注册时，会主动重连并全量重新注册。</p>
+      </details>
+      <details>
+        <summary>可以给隧道加访问控制吗？</summary>
+        <p>建议在入口层（nginx basic auth、IP 白名单、OIDC 等）做访问控制。隧道配置里的 <code>auth</code> 是访问上游时附加的 Basic Auth，不是公网鉴权。</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <a class="brand" href="#top">
+        <svg class="brand-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M16 3.5 27 9.7v12.6L16 28.5 5 22.3V9.7L16 3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M11 16h9.2m-3.6-3.6L20.2 16l-3.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand-text">DTNS<span class="brand-sub">/proxy</span></span>
+      </a>
+      <p>基于 WebSocket 的内网穿透系统。<br>按域名路由，原样转发 HTTP、WebSocket 与 SSE。</p>
+    </div>
+    <nav class="footer-links" aria-label="页脚导航">
+      <a href="#overview">概览</a>
+      <a href="#architecture">架构</a>
+      <a href="#protocol">协议</a>
+      <a href="#start">快速开始</a>
+      <a href="#config">配置</a>
+      <a href="#tunnels">隧道</a>
+      <a href="/test-agent.html">Agent API 测试</a>
+      <a href="/agent.html">Agent API (URL)</a>
+      <a href="/sdk.html">Agent SDK</a>
+    </nav>
+    <div class="footer-meta">
+      <p><span class="live"><i></i>站点运行中</span></p>
+      <p id="siteMeta">Node.js · 零依赖静态服务</p>
+      <p class="footer-publish">本站由 dtns.http-proxy 隧道发布<br><code>dtns-proxy.html.dtns.top</code></p>
+    </div>
+  </div>
+  <div class="wrap footer-bottom">
+    <p>© <span id="year">2026</span> DTNS HTTP Proxy · 内网穿透 / 按域名路由 / 二进制隧道</p>
+    <a href="#top" class="to-top">回到顶部 ↑</a>
+  </div>
+</footer>
+
+<script src="/assets/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="DTNS HTTP Proxy">
+  <rect width="64" height="64" rx="14" fill="#07101a"/>
+  <path d="M32 9 51 20v24L32 55 13 44V20L32 9Z" fill="none" stroke="#42e8b4" stroke-width="2.6" stroke-linejoin="round"/>
+  <path d="M23 32h18m-7-7 7 7-7 7" fill="none" stroke="#42e8b4" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
