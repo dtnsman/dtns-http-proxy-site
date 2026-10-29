@@ -1,0 +1,137 @@
+/* trade-agent-page.css — trade-agent.html / index.html 页面级样式（内联样式被 CSP 禁止，故外置） */
+.agent-tests { flex-wrap: wrap; }
+
+  .trade-responses {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .trade-response {
+    border: 1px solid rgba(126, 170, 210, 0.22);
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: rgba(8, 14, 24, 0.62);
+  }
+  .trade-response-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  .trade-response-head code {
+    color: #42e8b4;
+    word-break: break-all;
+  }
+  .trade-response-qa {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .trade-response-q {
+    margin: 0;
+    font-size: 12px;
+    color: rgba(233, 240, 248, 0.66);
+  }
+  .trade-response-a {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: #e9f0f8;
+    /* 超长答案（base64 / 日志）默认折叠 6 行，悬停或聚焦后展开 */
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .trade-response:hover .trade-response-a,
+  .trade-response:focus-within .trade-response-a {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
+
+  .trade-api-list {
+    list-style: none;
+    margin: 12px 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+  }
+  .trade-api-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border: 1px solid rgba(126, 170, 210, 0.18);
+    border-radius: 8px;
+    background: rgba(8, 14, 24, 0.55);
+  }
+  .trade-api-list .m {
+    min-width: 44px;
+    font-weight: 600;
+    color: #42e8b4;
+  }
+  .trade-api-list .p {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: #e9f0f8;
+  }
+  .trade-api-list .a {
+    margin-left: auto;
+    color: rgba(233, 240, 248, 0.55);
+  }
+
+  /* ---- 防撑破：超长 base64 / token / URL 不能把 grid 列顶宽 ---- */
+  .trade-section .agent-grid {
+    grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr);
+  }
+  .trade-section .agent-grid > .agent-card {
+    min-width: 0;
+    overflow: hidden;
+  }
+  .trade-responses,
+  .trade-response,
+  .trade-response-qa,
+  .trade-response-qa > li {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .trade-responses { overflow-x: hidden; }
+  .trade-response-q,
+  .trade-response-a {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .trade-response-head {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+  .trade-response-head code {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .trade-api-list li { min-width: 0; }
+  .trade-api-list .p { overflow-wrap: anywhere; }
+  .trade-form input,
+  .trade-form textarea { max-width: 100%; }
+  #tradeResult,
+  #tradeApiResult,
+  #tradeApiCurl,
+  #tradeAgentPrompt,
+  .agent-result {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  @media (max-width: 900px) {
+    .trade-section .agent-grid { grid-template-columns: minmax(0, 1fr); }
+  }

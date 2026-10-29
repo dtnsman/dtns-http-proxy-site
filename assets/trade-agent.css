@@ -1,0 +1,139 @@
+/* trade-agent.css — 交易区块样式（问题设置 → 作答领 Token → 计费调用） */
+
+.trade-section .section-head h2 {
+  margin: 8px 0 12px;
+}
+
+.trade-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.trade-form > label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text, #1f2933);
+}
+
+/* 深色页面背景下的输入框：白色描边 + 深色底 + 高亮文字，保证可读性 */
+.trade-section .trade-form textarea,
+.trade-section .trade-form input {
+  background: rgba(5, 8, 13, 0.72) !important;
+  border: 1px solid rgba(126, 170, 210, 0.38) !important;
+  color: #e9f0f8 !important;
+  caret-color: #42e8b4;
+  -webkit-text-fill-color: #e9f0f8 !important;
+}
+
+.trade-section .trade-form textarea::placeholder,
+.trade-section .trade-form input::placeholder {
+  color: rgba(233, 240, 248, 0.45) !important;
+}
+
+.trade-form textarea,
+.trade-form input[type="text"],
+.trade-form input[type="number"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--line, #d8dee9);
+  border-radius: 10px;
+  background: var(--surface, #fff);
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+}
+
+.trade-form textarea {
+  resize: vertical;
+  min-height: 96px;
+  line-height: 1.6;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.trade-form textarea:focus,
+.trade-form input:focus {
+  outline: none;
+  border-color: var(--accent, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.trade-error {
+  color: #ff8a8a !important;
+  font-weight: 600;
+}
+
+.trade-row {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  align-items: center;
+  gap: 12px;
+}
+
+.trade-row label {
+  font-size: 13px;
+  color: var(--muted, #52606d);
+}
+
+.trade-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.trade-field label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.trade-ledger {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  font-size: 13px;
+}
+
+.trade-ledger li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line, #e4e8ee);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+}
+
+.trade-ok {
+  color: #15803d;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.trade-time {
+  margin-left: auto;
+  color: var(--muted, #7b8794);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.trade-ledger code {
+  font-size: 12px;
+  color: var(--muted, #52606d);
+}
+
+.trade-section .agent-hint b {
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .trade-row {
+    grid-template-columns: 1fr;
+  }
+}
