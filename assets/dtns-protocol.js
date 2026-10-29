@@ -352,6 +352,48 @@
     return encodeFrame('websocket_close', payload, VERSION, 0);
   }
 
+  // ==================== SSE (client -> server) ====================
+  // 旧 SSE 旁路：sseRequestId 由中继在 handleSSERequest() 中生成，
+  // 客户端通过 sse_data / sse_end 帧把事件推回浏览器。
+
+  function encodeSSEData(fields) {
+    var data = typeof fields.data === 'string'
+      ? utf8(fields.data)
+      : utf8(JSON.stringify(fields.data === undefined ? '' : fields.data));
+    var payload = concat([
+      encodeString(fields.sseRequestId || ''),
+      encodeBuffer(data),
+      encodeString(fields.event || ''),
+      encodeString(fields.id || ''),
+      u8(fields.retry || 0),
+      encodeString(fields.timestamp || new Date().toISOString())
+    ]);
+    return encodeFrame('sse_data', payload, VERSION, 0);
+  }
+
+  function encodeSSEEnd(fields) {
+    // 服务端没有 sse_end 专用解码器，走通用 JSON（u32 长度 + JSON）。
+    return encodeFrame('sse_end', encodeGeneric({
+      type: 'sse_end',
+      sseRequestId: fields.sseRequestId || '',
+      timestamp: fields.timestamp || new Date().toISOString()
+    }), VERSION, 0);
+  }
+
+  function encodeSSEError(fields) {
+    return encodeFrame('sse_error', encodeGeneric({
+      type: 'sse_error',
+      sseRequestId: fields.sseRequestId || '',
+      error: fields.error || '',
+      timestamp: fields.timestamp || new Date().toISOString()
+    }), VERSION, 0);
+  }
+
+  function encodeGeneric(fields) {
+    var bytes = utf8(JSON.stringify(fields));
+    return concat([u32(bytes.length), bytes]);
+  }
+
   // ==================== server -> client ====================
 
   function decodeWelcome(payload) {
@@ -460,6 +502,16 @@
       case 'websocket_close':
       case 'websocket_close_from_server':
         return decodeWebSocketClose(frame.payload);
+      case 'sse_close':
+      case 'sse_close_from_server':
+        // 服务端对 sse_close 走通用 JSON（u32 长度 + JSON）
+        try {
+          var view = new DataView(frame.payload.buffer, frame.payload.byteOffset, frame.payload.byteLength);
+          var jsonLen = view.getUint32(0);
+          return JSON.parse(decoder.decode(frame.payload.slice(4, 4 + jsonLen)));
+        } catch (error) {
+          return { type: 'sse_close', payload: frame.payload };
+        }
       default:
         return { type: frame.type, payload: frame.payload };
     }
@@ -484,6 +536,9 @@
     encodeHttpResponse: encodeHttpResponse,
     encodeWebSocketData: encodeWebSocketData,
     encodeWebSocketClose: encodeWebSocketClose,
+    encodeSSEData: encodeSSEData,
+    encodeSSEEnd: encodeSSEEnd,
+    encodeSSEError: encodeSSEError,
     decodeWebSocketData: decodeWebSocketData,
     decodeWebSocketClose: decodeWebSocketClose,
     decodeWelcome: decodeWelcome,
